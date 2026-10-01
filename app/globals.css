@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4fce9;
+  --foreground: #1e1815;
+  --card: #e9f8d3;
+  --primary: #1e7b6d;
+  --primary-hover: #145249;
+  --text: #1e1815;
+  --accent: #20aaac;
 }
 
-@theme inline {
+inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
+  background: transparent;
+  isolation: isolate;
+  position: relative;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10px;
+  z-index: -1;
+  background: url("/feuille.jpeg") center / cover no-repeat;
+  filter: blur(6px);
 }
