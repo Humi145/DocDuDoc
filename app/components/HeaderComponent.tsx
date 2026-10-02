@@ -18,14 +18,12 @@ export default function HeaderComponent() {
             La doc du Doc
           </h1>
         </div>
-
         <nav>
           <ul className="flex space-x-4">
             <li>
               <a
-                href="#"
-                className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base text-(--foreground) shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
-              >
+              href="#"
+              className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white">
                 Correspondants
               </a>
             </li>
