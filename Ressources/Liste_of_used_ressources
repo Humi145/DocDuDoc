@@ -1,0 +1,10 @@
+Ressources pour la database :
+https://www.youtube.com/watch?v=Hs9Fh1fr5s8 : Vidéo sur le setup de PostgresSql via docker.
+à retenir :
+docker run --name any-name -e POSTGRES_PASSWORD=anything -p 5431:5432 -d Postgres
+we can connect our postgres container to some sources like pgAdmin a GUI software or we can connect through the terminal also in GUI go to public and then tables
+to connect through terminal use psql a CLI tool
+
+n'est pas en direct rapport avec NextJS, mais permet de comprendre comment lancer PostgreSql
+
+https://coggle.it/diagram/ZtMDf8rvLIwlbc-0/t/backend-engineering/44ac2c05e0c7fcdd9920723c49ec128e5a65bcc430a145638eb01f5c64a884a1 : MindMap pour le backend. Peut probablement s'avérer utile dans le futur.
