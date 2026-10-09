@@ -8,3 +8,6 @@ to connect through terminal use psql a CLI tool
 n'est pas en direct rapport avec NextJS, mais permet de comprendre comment lancer PostgreSql
 
 https://coggle.it/diagram/ZtMDf8rvLIwlbc-0/t/backend-engineering/44ac2c05e0c7fcdd9920723c49ec128e5a65bcc430a145638eb01f5c64a884a1 : MindMap pour le backend. Peut probablement s'avérer utile dans le futur.
+
+Prisma :
+https://www.youtube.com/watch?v=Ndhx_rNkoUw : vidéo sur le setup de Prisma avec Postgresql

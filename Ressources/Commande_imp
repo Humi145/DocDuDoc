@@ -1,3 +1,13 @@
 setup de Postgresql: 
 docker run --name DDD -e POSTGRES_PASSWORD=1234 -p 5431:5432 -d postgres
 /!\ Attention, cette commande n'est pas la commande à run lors du déploiement. trouvé un meilleur mot de passe.
+
+Setup de Prisma :
+npm install -D prisma // ça installe Prisma en tant que dépendance de développement
+npx prisma init // ça initialise Prisma dans le projet, créant un fichier schema.prisma et un dossier prisma
+npx prisma generate // ça génère le client Prisma à partir du fichier schema.prisma
+npx prisma db push // ça pousse le schéma de la base de données vers PostgreSQL, créant les tables et les relations définies dans schema.prisma
+npx prisma studio // ça ouvre Prisma Studio, une interface graphique pour interagir avec la base de données
+
+npm i @prisma/adapter-pg // ça installe l'adaptateur PostgreSQL pour Prisma, permettant à Prisma de se connecter à une base de données PostgreSQL
+npm i @prisma/client // ça installe le client Prisma, qui est utilisé pour interagir avec la base de données dans le code de l'application
