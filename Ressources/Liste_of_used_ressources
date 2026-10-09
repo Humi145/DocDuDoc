@@ -11,3 +11,8 @@ https://coggle.it/diagram/ZtMDf8rvLIwlbc-0/t/backend-engineering/44ac2c05e0c7fcd
 
 Prisma :
 https://www.youtube.com/watch?v=Ndhx_rNkoUw : vidéo sur le setup de Prisma avec Postgresql
+
+Better auth :
+https://better-auth.com/docs/installation : documentation de l'installation
+https://better-auth.com/docs/adapters/prisma : documentation sur l'implémentation avec prisma
+https://www.youtube.com/watch?v=N4meIif7Jtc : vidéo de CINQ HEURE, mais très informative sur comment utiliser Better auth. Skip à 11:17 pour le setup avec prisma

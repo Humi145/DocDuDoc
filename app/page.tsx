@@ -1,9 +1,9 @@
 import Link from "next/link";
-import prisma from "./libs/db";
+import prisma from "./libs/prisma";
+import { auth } from "./libs/auth";
 
 export default async function Home() {
   const user = await prisma.user.findMany();
-  
   return (
     <main className="flex min-h-screen flex-col items-center justify-between backdrop-blur-md">
       <section

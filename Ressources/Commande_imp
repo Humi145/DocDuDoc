@@ -11,3 +11,8 @@ npx prisma studio // ça ouvre Prisma Studio, une interface graphique pour inter
 
 npm i @prisma/adapter-pg // ça installe l'adaptateur PostgreSQL pour Prisma, permettant à Prisma de se connecter à une base de données PostgreSQL
 npm i @prisma/client // ça installe le client Prisma, qui est utilisé pour interagir avec la base de données dans le code de l'application
+
+Better auth :
+npm install @better-auth/prisma-adapter // installe l'adaptateur.
+npx @better-auth/cli generate --config app/libs/auth.ts --output=auth.prisma.schema // génère la nouvelle table dans un nouveau fichier auth.prisma.schema pour better auth.
+                                                                                       /!\ il faut enlever le fichier générer une fois que tout a été copié dans schema.prisma
