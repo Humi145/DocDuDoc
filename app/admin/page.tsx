@@ -107,7 +107,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </form>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
+          <table className="w-full min-w-190 text-left text-sm">
             <thead className="bg-white/60 text-(--foreground)/75">
               <tr>
                 <th scope="col" className="px-5 py-4 font-semibold">Utilisateur</th>
