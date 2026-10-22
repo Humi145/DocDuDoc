@@ -20,6 +20,32 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Administration
+
+La page `/admin` permet aux administrateurs de consulter, rechercher et paginer
+les comptes, ainsi que de suspendre ou réactiver leur accès. Elle requiert la
+variable serveur `ADMIN_USER_IDS`, une liste d’identifiants utilisateur séparés
+par des virgules. Pour trouver un identifiant dans PostgreSQL :
+
+```sql
+SELECT id, email FROM "user" WHERE email = 'administrateur@example.com';
+```
+
+Ajoutez l’identifiant retourné à `ADMIN_USER_IDS`, puis redémarrez l’application.
+Pour une base existante créée auparavant avec `prisma db push`, les migrations
+initiales doivent être baselinées une seule fois :
+
+```bash
+npx prisma migrate resolve --applied 20261016000000_init
+npx prisma migrate resolve --applied 20261016104500_admin_account_controls
+```
+
+La première commande enregistre l’historique initial sans recréer les tables.
+La seconde est appropriée uniquement si les champs d’administration de cette
+migration existent déjà dans la base. Pour une base vide, utilisez plutôt
+`npx prisma migrate deploy` : les deux migrations seront appliquées dans l’ordre.
+Les administrateurs configurés ne peuvent pas être suspendus depuis cette page.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
