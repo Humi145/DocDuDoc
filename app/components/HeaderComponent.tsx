@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { auth } from "@/app/libs/auth";
+import { adminUserIds, auth } from "@/app/libs/auth";
 import SignOutButton from "./SignOutButton";
 
 export default async function HeaderComponent() {
@@ -27,6 +27,16 @@ export default async function HeaderComponent() {
           <ul className="flex space-x-4">
             {session ? (
               <>
+              {adminUserIds.includes(session.user.id) && (
+                <li>
+                  <Link
+                    href="/admin"
+                    className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
+                  >
+                    Administration
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link
                   href="/dashboard"

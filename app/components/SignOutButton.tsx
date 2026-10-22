@@ -41,7 +41,7 @@ export default function SignOutButton() {
         type="button"
         onClick={handleSignOut}
         disabled={isSigningOut}
-        className="inline-flex items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base text-(--text) shadow-sm transition-colors hover:bg-(--primary) hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex items-center rounded-md border-2 border-(--primary) bg-(--red) px-6 py-3 text-base text-(--text) shadow-sm transition-colors hover:bg-(--primary) hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSigningOut ? "Déconnexion…" : "Se déconnecter"}
       </button>

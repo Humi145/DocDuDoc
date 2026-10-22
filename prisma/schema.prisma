@@ -21,6 +21,10 @@ model User {
   email         String @unique
   emailVerified Boolean   @default(false)
   image         String?
+  role          String    @default("user")
+  banned        Boolean   @default(false)
+  banReason     String?
+  banExpires    DateTime?
 
   sessions      Session[]
   accounts      Account[]
@@ -40,6 +44,7 @@ model Session {
 
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
 
 
   @@index([userId])
