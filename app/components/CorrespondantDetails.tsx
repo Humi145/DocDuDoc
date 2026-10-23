@@ -84,7 +84,7 @@ function Information({
   return (
     <div>
       <dt className="text-sm font-medium text-(--foreground)/70">{label}</dt>
-      <dd className="mt-1 whitespace-pre-wrap break-words">{children}</dd>
+      <dd className="mt-1 whitespace-pre-wrap wrap-break">{children}</dd>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
 type CorrespondantListItem = {
   id: string;
@@ -10,10 +10,6 @@ type CorrespondantListItem = {
   email: string;
   speciality: string | null;
   patientslist: string[];
-};
-
-type CorrespondantsResponse = {
-  correspondants: CorrespondantListItem[];
 };
 
 type SearchField = "name" | "patient" | "speciality";
@@ -63,29 +59,15 @@ function normalizeSearchText(value: string): string {
 }
 
 type ViewState =
-  | { status: "loading" }
   | { status: "unauthenticated" }
-  | { status: "error"; message: string }
   | { status: "ready"; correspondants: CorrespondantListItem[] };
 
-function isCorrespondantsResponse(
-  value: unknown,
-): value is CorrespondantsResponse {
-  if (!isRecord(value) || !Array.isArray(value.correspondants)) {
-    return false;
-  }
-
-  const correspondants = value.correspondants.map(normalizeCorrespondant);
-  if (correspondants.some((item) => item === null)) {
-    return false;
-  }
-
-  value.correspondants = correspondants;
-  return true;
-}
-
-export default function CorrespondantList() {
-  const [state, setState] = useState<ViewState>({ status: "loading" });
+export default function CorrespondantList({
+  initialState,
+}: {
+  initialState: ViewState;
+}) {
+  const [state, setState] = useState<ViewState>(initialState);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
@@ -166,61 +148,6 @@ export default function CorrespondantList() {
     }
   }
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadCorrespondants() {
-      try {
-        const response = await fetch("/api/correspondants", {
-          cache: "no-store",
-          credentials: "same-origin",
-        });
-
-        if (!isMounted) {
-          return;
-        }
-
-        if (response.status === 401) {
-          setState({ status: "unauthenticated" });
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error("Impossible de charger les correspondants.");
-        }
-
-        const payload: unknown = await response.json();
-        if (!isCorrespondantsResponse(payload)) {
-          throw new Error("La réponse de l’API est invalide.");
-        }
-
-        if (isMounted) {
-          setState({ status: "ready", correspondants: payload.correspondants });
-        }
-      } catch (error) {
-        if (isMounted) {
-          setState({
-            status: "error",
-            message:
-              error instanceof Error
-                ? error.message
-                : "Une erreur inattendue est survenue.",
-          });
-        }
-      }
-    }
-
-    void loadCorrespondants();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  if (state.status === "loading") {
-    return <p role="status" className="mt-8">Chargement des correspondants… (peut prendre quelques secondes)</p>;
-  }
-
   if (state.status === "unauthenticated") {
     return (
       <p className="mt-8">
@@ -228,14 +155,6 @@ export default function CorrespondantList() {
           Connectez-vous
         </Link>{" "}
         pour consulter vos correspondants.
-      </p>
-    );
-  }
-
-  if (state.status === "error") {
-    return (
-      <p role="alert" className="mt-8 text-red-700">
-        {state.message}
       </p>
     );
   }
@@ -297,17 +216,10 @@ export default function CorrespondantList() {
             <select
               id="correspondant-search-field"
               value={searchField}
-              onChange={(event) => {
-                const value = event.target.value;
-                if (
-                  value === "name" ||
-                  value === "patient" ||
-                  value === "speciality"
-                ) {
-                  setSearchField(value);
-                }
-              }}
-              className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
+              onChange={(event) =>
+                setSearchField(event.target.value as SearchField)
+              }
+              className="w-full rounded-lg border border-(--foreground)/20 px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             >
               <option value="name">Nom</option>
               <option value="patient">Patient</option>

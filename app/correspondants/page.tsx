@@ -1,6 +1,35 @@
+import { Suspense } from "react";
 import CorrespondantList from "@/app/components/CorrespondantList";
+import { getAuthenticatedUser } from "@/app/api/correspondants/helpers";
+import prisma from "@/app/libs/prisma";
 
-export default async function CorrespondantsPage() {
+async function CorrespondantsContent() {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    return <CorrespondantList initialState={{ status: "unauthenticated" }} />;
+  }
+
+  const correspondants = await prisma.correspondant.findMany({
+    where: { userId: user.id },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      speciality: true,
+      patientslist: true,
+    },
+  });
+
+  return (
+    <CorrespondantList
+      initialState={{ status: "ready", correspondants }}
+    />
+  );
+}
+
+export default function CorrespondantsPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between backdrop-blur-md">
       <section
@@ -14,7 +43,15 @@ export default async function CorrespondantsPage() {
           Correspondants
         </h1>
 
-        <CorrespondantList />
+        <Suspense
+          fallback={
+            <p role="status" className="mt-8">
+              Chargement des correspondants…
+            </p>
+          }
+        >
+          <CorrespondantsContent />
+        </Suspense>
       </section>
     </main>
   );
