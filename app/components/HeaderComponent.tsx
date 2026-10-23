@@ -38,14 +38,6 @@ export default async function HeaderComponent() {
                 </li>
               )}
               <li>
-                <Link
-                  href="/dashboard"
-                  className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
-                >
-                  Tableau de bord
-                </Link>
-              </li>
-              <li>
                 <SignOutButton />
               </li>
               </>
@@ -71,7 +63,7 @@ export default async function HeaderComponent() {
             )}
             <li>
               <a
-                href="#"
+                href="correspondants"
                 className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
               >
                 Correspondants

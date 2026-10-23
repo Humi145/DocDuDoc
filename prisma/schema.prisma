@@ -28,6 +28,7 @@ model User {
 
   sessions      Session[]
   accounts      Account[]
+  correspondants Correspondant[]
 
   @@map("user")
 }
@@ -84,4 +85,25 @@ model Verification {
 
   @@index([identifier])
   @@map("verifications")
+}
+
+model Correspondant {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  email     String
+  phone     String?
+  address   String?
+  speciality String?
+  patientslist String[]
+  notes     String?
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@map("correspondants")
 }

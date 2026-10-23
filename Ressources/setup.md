@@ -199,6 +199,75 @@ les statistiques et de suspendre ou réactiver un compte. L'accès est vérifié
 côté serveur ; les comptes configurés comme administrateurs sont protégés
 contre la suspension depuis cette page.
 
+## API des correspondants
+
+Les routes `/api/correspondants` nécessitent une session Better Auth. Depuis
+le navigateur où l'utilisateur est connecté, les cookies de session sont
+envoyés avec les requêtes same-origin. Chaque compte ne reçoit et ne modifie
+que ses propres correspondants.
+
+### Lister les correspondants
+
+```js
+const response = await fetch("/api/correspondants");
+const { correspondants } = await response.json();
+```
+
+La réponse contient une propriété `correspondants`, un tableau trié par nom.
+
+### Créer un correspondant
+
+Le nom et l'adresse e-mail sont obligatoires. La spécialité, le téléphone,
+l'adresse et les notes sont facultatifs. Les patients sont transmis sous forme
+de tableau de noms ; dans le formulaire du site, entrez un nom par ligne.
+
+```js
+const response = await fetch("/api/correspondants", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: "Dr. Martin",
+    email: "martin@example.fr",
+    phone: "01 23 45 67 89",
+    address: "10 rue Exemple, Paris",
+    speciality: "Cardiologie",
+    patientslist: ["Camille Durand", "Alex Martin"],
+  }),
+});
+
+const result = await response.json();
+```
+
+### Lire, modifier ou supprimer un correspondant
+
+Remplacez `ID_DU_CORRESPONDANT` par l'identifiant reçu lors de la création.
+`PATCH` ne modifie que les champs envoyés ; un champ facultatif à `null` ou
+vide est effacé.
+
+```js
+const id = "ID_DU_CORRESPONDANT";
+
+const details = await fetch(`/api/correspondants/${id}`);
+
+const modification = await fetch(`/api/correspondants/${id}`, {
+  method: "PATCH",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    phone: "01 23 45 67 89",
+    speciality: "Cardiologie",
+    patientslist: ["Camille Durand", "Alex Martin"],
+  }),
+});
+
+const suppression = await fetch(`/api/correspondants/${id}`, {
+  method: "DELETE",
+});
+```
+
+Les erreurs courantes sont `401` (session absente), `400` (données invalides),
+`404` (correspondant absent ou appartenant à un autre compte) et `409`
+(adresse e-mail déjà utilisée par un de vos correspondants).
+
 ## Commandes utiles
 
 | Commande | Utilité |
