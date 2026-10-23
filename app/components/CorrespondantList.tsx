@@ -16,6 +16,8 @@ type CorrespondantsResponse = {
   correspondants: CorrespondantListItem[];
 };
 
+type SearchField = "name" | "patient" | "speciality";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -52,6 +54,14 @@ function normalizeCorrespondant(
   };
 }
 
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("fr")
+    .trim();
+}
+
 type ViewState =
   | { status: "loading" }
   | { status: "unauthenticated" }
@@ -80,6 +90,8 @@ export default function CorrespondantList() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchField, setSearchField] = useState<SearchField>("name");
 
   async function handleCreateCorrespondant(
     event: FormEvent<HTMLFormElement>,
@@ -206,7 +218,7 @@ export default function CorrespondantList() {
   }, []);
 
   if (state.status === "loading") {
-    return <p role="status" className="mt-8">Chargement des correspondants…</p>;
+    return <p role="status" className="mt-8">Chargement des correspondants… (peut prendre quelques secondes)</p>;
   }
 
   if (state.status === "unauthenticated") {
@@ -227,6 +239,24 @@ export default function CorrespondantList() {
       </p>
     );
   }
+
+  const normalizedSearchQuery = normalizeSearchText(searchQuery);
+  const filteredCorrespondants = state.correspondants.filter((correspondant) => {
+    if (!normalizedSearchQuery) {
+      return true;
+    }
+
+    const searchValues =
+      searchField === "name"
+        ? [correspondant.name]
+        : searchField === "patient"
+          ? correspondant.patientslist
+          : [correspondant.speciality ?? ""];
+
+    return searchValues.some((value) =>
+      normalizeSearchText(value).includes(normalizedSearchQuery),
+    );
+  });
 
   return (
     <div className="mt-8 w-full max-w-2xl text-left">
@@ -253,6 +283,60 @@ export default function CorrespondantList() {
         <p role="status" className="mt-4 text-sm text-(--primary)">
           {successMessage}
         </p>
+      )}
+
+      {state.correspondants.length > 0 && (
+        <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          <div>
+            <label
+              htmlFor="correspondant-search-field"
+              className="mb-1 block text-sm font-medium"
+            >
+              Rechercher par
+            </label>
+            <select
+              id="correspondant-search-field"
+              value={searchField}
+              onChange={(event) => {
+                const value = event.target.value;
+                if (
+                  value === "name" ||
+                  value === "patient" ||
+                  value === "speciality"
+                ) {
+                  setSearchField(value);
+                }
+              }}
+              className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
+            >
+              <option value="name">Nom</option>
+              <option value="patient">Patient</option>
+              <option value="speciality">Spécialité</option>
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="correspondant-search"
+              className="mb-1 block text-sm font-medium"
+            >
+              Terme à rechercher
+            </label>
+            <input
+              id="correspondant-search"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={
+                searchField === "name"
+                  ? "Nom du correspondant"
+                  : searchField === "patient"
+                    ? "Nom du patient"
+                    : "Spécialité"
+              }
+              className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
+            />
+          </div>
+        </div>
       )}
 
       {isFormOpen && (
@@ -397,7 +481,7 @@ export default function CorrespondantList() {
       )}
 
       <ul className="mt-6 flex flex-col gap-4">
-        {state.correspondants.map((correspondant) => (
+        {filteredCorrespondants.map((correspondant) => (
           <li
             key={correspondant.id}
             className="flex flex-col justify-between gap-2 rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base text-(--text) shadow-sm sm:flex-row sm:items-center"
@@ -416,12 +500,20 @@ export default function CorrespondantList() {
                 </p>
               )}
             </div>
-            <a
-              href={`mailto:${correspondant.email}`}
-              className="text-(--primary) hover:text-(--foreground)"
-            >
-              {correspondant.email}
-            </a>
+            <div className="flex flex-wrap items-center gap-4">
+              <a
+                href={`mailto:${correspondant.email}`}
+                className="text-(--primary) hover:text-(--foreground)"
+              >
+                {correspondant.email}
+              </a>
+              <Link
+                href={`/correspondants/${encodeURIComponent(correspondant.id)}`}
+                className="rounded-lg border border-(--primary) px-4 py-2 font-semibold text-(--primary) transition-colors hover:bg-(--primary) hover:text-white"
+              >
+                Afficher
+              </Link>
+            </div>
           </li>
         ))}
         {state.correspondants.length === 0 && (
@@ -429,6 +521,12 @@ export default function CorrespondantList() {
             Vous n’avez pas encore de correspondant.
           </li>
         )}
+        {state.correspondants.length > 0 &&
+          filteredCorrespondants.length === 0 && (
+            <li className="text-(--foreground)/70">
+              Aucun correspondant ne correspond à cette recherche.
+            </li>
+          )}
       </ul>
     </div>
   );
