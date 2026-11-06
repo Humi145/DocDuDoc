@@ -63,6 +63,14 @@ export default async function HeaderComponent() {
             )}
             <li>
               <Link
+                href="/documents"
+                className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
+              >
+                Documents
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/correspondants"
                 className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
               >

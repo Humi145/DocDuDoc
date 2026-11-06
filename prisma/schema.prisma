@@ -30,6 +30,7 @@ model User {
   accounts      Account[]
   correspondants Correspondant[]
   pathologies   Pathology[]
+  documents     Document[]
 
   @@map("user")
 }
@@ -124,4 +125,18 @@ model Pathology {
 
   @@index([userId])
   @@map("pathologies")
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  name      String
+  storageKey String  @unique
+  size      Int
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("documents")
 }

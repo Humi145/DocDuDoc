@@ -12,8 +12,19 @@ https://coggle.it/diagram/ZtMDf8rvLIwlbc-0/t/backend-engineering/44ac2c05e0c7fcd
 Prisma :
 https://www.youtube.com/watch?v=Ndhx_rNkoUw : vidéo sur le setup de Prisma avec Postgresql
 
+Nextjs :
+https://nextjs.org/docs/app/getting-started/route-handlers : documentation des route handlers, pour les calls api
+
 Better auth :
 https://better-auth.com/docs/installation : documentation de l'installation
 https://better-auth.com/docs/adapters/prisma : documentation sur l'implémentation avec prisma
 https://www.youtube.com/watch?v=N4meIif7Jtc : vidéo de CINQ HEURE, mais très informative sur comment utiliser Better auth. Skip à 11:17 pour le setup avec prisma
 https://better-auth.com/docs/plugins/admin : Documentation du plugin admin de Better Auth
+
+
+Divers pour les documents :
+https://esante.gouv.fr/produits-services/hds : explication de l'HDS, et le pourquoi du comment l'audit de sécurité est TRèS important.
+https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html : Une solution de stockage S3. Mais en vrai pas très worth it, vu que j'aimerais pouvoir me gouverner tout seul.
+https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html : une liste des app un peu utile pour les précautions à prendre quant aux échanges de fichiers.
+https://mozilla.github.io/pdf.js/ : solution d'affichage de pdf sur le web.
+
