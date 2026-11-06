@@ -8,8 +8,11 @@ type CorrespondantListItem = {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
+  address: string | null;
   speciality: string | null;
   patientslist: string[];
+  notes: string | null;
 };
 
 type SearchField = "name" | "patient" | "speciality";
@@ -31,10 +34,16 @@ function normalizeCorrespondant(
   }
 
   const speciality = value.speciality ?? null;
+  const phone = value.phone ?? null;
+  const address = value.address ?? null;
+  const notes = value.notes ?? null;
   const patientslist = value.patientslist ?? [];
 
   if (
+    (typeof phone !== "string" && phone !== null) ||
+    (typeof address !== "string" && address !== null) ||
     (typeof speciality !== "string" && speciality !== null) ||
+    (typeof notes !== "string" && notes !== null) ||
     !Array.isArray(patientslist) ||
     !patientslist.every((patient: unknown) => typeof patient === "string")
   ) {
@@ -45,8 +54,11 @@ function normalizeCorrespondant(
     id: value.id,
     name: value.name,
     email: value.email,
+    phone,
+    address,
     speciality,
     patientslist,
+    notes,
   };
 }
 
@@ -69,15 +81,21 @@ export default function CorrespondantList({
 }) {
   const [state, setState] = useState<ViewState>(initialState);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchField, setSearchField] = useState<SearchField>("name");
 
-  async function handleCreateCorrespondant(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  const editingCorrespondant =
+    state.status === "ready" && editingId
+      ? state.correspondants.find(({ id }) => id === editingId) ?? null
+      : null;
+
+  async function handleSubmitCorrespondant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (state.status !== "ready") {
       return;
@@ -86,27 +104,33 @@ export default function CorrespondantList({
     const form = event.currentTarget;
     const formData = new FormData(form);
     setFormError("");
+    setActionError("");
     setSuccessMessage("");
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/correspondants", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          name: formData.get("name"),
-          email: formData.get("email"),
-          phone: formData.get("phone") || null,
-          address: formData.get("address") || null,
-          speciality: formData.get("speciality") || null,
-          patientslist: String(formData.get("patientslist") ?? "")
-            .split("\n")
-            .map((patient) => patient.trim())
-            .filter(Boolean),
-          notes: formData.get("notes") || null,
-        }),
-      });
+      const response = await fetch(
+        editingId
+          ? `/api/correspondants/${encodeURIComponent(editingId)}`
+          : "/api/correspondants",
+        {
+          method: editingId ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            name: formData.get("name"),
+            email: formData.get("email"),
+            phone: formData.get("phone") || null,
+            address: formData.get("address") || null,
+            speciality: formData.get("speciality") || null,
+            patientslist: String(formData.get("patientslist") ?? "")
+              .split("\n")
+              .map((patient) => patient.trim())
+              .filter(Boolean),
+            notes: formData.get("notes") || null,
+          }),
+        },
+      );
 
       const payload: unknown = await response.json();
       if (!response.ok) {
@@ -116,27 +140,38 @@ export default function CorrespondantList({
           "error" in payload &&
           typeof payload.error === "string"
             ? payload.error
-            : "Impossible d’ajouter ce correspondant.";
+            : "Impossible d’enregistrer ce correspondant.";
         throw new Error(message);
       }
 
-      const createdCorrespondant =
+      const savedCorrespondant =
         isRecord(payload) && "correspondant" in payload
           ? normalizeCorrespondant(payload.correspondant)
           : null;
-      if (!createdCorrespondant) {
+      if (!savedCorrespondant) {
         throw new Error("La réponse de l’API est invalide.");
       }
 
       setState({
         status: "ready",
-        correspondants: [...state.correspondants, createdCorrespondant].sort(
-          (first, second) => first.name.localeCompare(second.name, "fr"),
-        ),
+        correspondants: (
+          editingId
+            ? state.correspondants.map((correspondant) =>
+                correspondant.id === editingId
+                  ? savedCorrespondant
+                  : correspondant,
+              )
+            : [...state.correspondants, savedCorrespondant]
+        ).sort((first, second) => first.name.localeCompare(second.name, "fr")),
       });
       form.reset();
       setIsFormOpen(false);
-      setSuccessMessage("Le correspondant a bien été ajouté.");
+      setEditingId(null);
+      setSuccessMessage(
+        editingId
+          ? "Le correspondant a bien été modifié."
+          : "Le correspondant a bien été ajouté.",
+      );
     } catch (error) {
       setFormError(
         error instanceof Error
@@ -145,6 +180,57 @@ export default function CorrespondantList({
       );
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteCorrespondant(correspondant: CorrespondantListItem) {
+    if (
+      state.status !== "ready" ||
+      !window.confirm(
+        `Supprimer ${correspondant.name} ? Cette action est irréversible.`,
+      )
+    ) {
+      return;
+    }
+
+    setActionError("");
+    setSuccessMessage("");
+    setDeletingId(correspondant.id);
+
+    try {
+      const response = await fetch(
+        `/api/correspondants/${encodeURIComponent(correspondant.id)}`,
+        { method: "DELETE", credentials: "same-origin" },
+      );
+
+      if (!response.ok) {
+        const payload: unknown = await response.json();
+        const message =
+          isRecord(payload) && typeof payload.error === "string"
+            ? payload.error
+            : "Impossible de supprimer ce correspondant.";
+        throw new Error(message);
+      }
+
+      setState({
+        status: "ready",
+        correspondants: state.correspondants.filter(
+          (item) => item.id !== correspondant.id,
+        ),
+      });
+      if (editingId === correspondant.id) {
+        setIsFormOpen(false);
+        setEditingId(null);
+      }
+      setSuccessMessage("Le correspondant a bien été supprimé.");
+    } catch (error) {
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "Une erreur inattendue est survenue. Réessayez.",
+      );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -188,15 +274,32 @@ export default function CorrespondantList({
           aria-expanded={isFormOpen}
           aria-controls="create-correspondant-form"
           onClick={() => {
-            setIsFormOpen((isOpen) => !isOpen);
+            if (isFormOpen) {
+              setIsFormOpen(false);
+              setEditingId(null);
+            } else {
+              setEditingId(null);
+              setIsFormOpen(true);
+            }
             setFormError("");
+            setActionError("");
             setSuccessMessage("");
           }}
           className="rounded-lg bg-(--primary) px-5 py-3 font-semibold text-white transition-colors hover:bg-(--primary-hover)"
         >
-          {isFormOpen ? "Annuler" : "Ajouter un correspondant"}
+          {isFormOpen
+            ? "Annuler"
+            : editingId
+              ? "Modifier le correspondant"
+              : "Ajouter un correspondant"}
         </button>
       </div>
+
+      {actionError && (
+        <p role="alert" className="mt-4 text-sm text-red-700">
+          {actionError}
+        </p>
+      )}
 
       {successMessage && (
         <p role="status" className="mt-4 text-sm text-(--primary)">
@@ -253,10 +356,16 @@ export default function CorrespondantList({
 
       {isFormOpen && (
         <form
+          key={editingId ?? "new-correspondant"}
           id="create-correspondant-form"
-          onSubmit={handleCreateCorrespondant}
+          onSubmit={handleSubmitCorrespondant}
           className="mt-5 grid gap-4 rounded-xl border border-(--foreground)/15 bg-white/80 p-5 sm:grid-cols-2"
         >
+          <h3 className="text-lg font-semibold sm:col-span-2">
+            {editingCorrespondant
+              ? `Modifier ${editingCorrespondant.name}`
+              : "Ajouter un correspondant"}
+          </h3>
           <div>
             <label
               htmlFor="correspondant-name"
@@ -271,6 +380,7 @@ export default function CorrespondantList({
               autoComplete="name"
               maxLength={120}
               required
+              defaultValue={editingCorrespondant?.name ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -289,6 +399,7 @@ export default function CorrespondantList({
               autoComplete="email"
               maxLength={254}
               required
+              defaultValue={editingCorrespondant?.email ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -306,6 +417,7 @@ export default function CorrespondantList({
               type="tel"
               autoComplete="tel"
               maxLength={2000}
+              defaultValue={editingCorrespondant?.phone ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -322,6 +434,7 @@ export default function CorrespondantList({
               name="speciality"
               type="text"
               maxLength={120}
+              defaultValue={editingCorrespondant?.speciality ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -339,6 +452,7 @@ export default function CorrespondantList({
               type="text"
               autoComplete="street-address"
               maxLength={2000}
+              defaultValue={editingCorrespondant?.address ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -354,6 +468,7 @@ export default function CorrespondantList({
               id="correspondant-patientslist"
               name="patientslist"
               rows={3}
+              defaultValue={editingCorrespondant?.patientslist.join("\n") ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -370,6 +485,7 @@ export default function CorrespondantList({
               name="notes"
               rows={3}
               maxLength={2000}
+              defaultValue={editingCorrespondant?.notes ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -386,7 +502,13 @@ export default function CorrespondantList({
               disabled={isSubmitting}
               className="rounded-lg bg-(--primary) px-5 py-3 font-semibold text-white transition-colors hover:bg-(--primary-hover) disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Ajout en cours…" : "Enregistrer"}
+              {isSubmitting
+                ? editingCorrespondant
+                  ? "Modification en cours…"
+                  : "Ajout en cours…"
+                : editingCorrespondant
+                  ? "Enregistrer les modifications"
+                  : "Enregistrer"}
             </button>
           </div>
         </form>
@@ -425,6 +547,30 @@ export default function CorrespondantList({
               >
                 Afficher
               </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingId(correspondant.id);
+                  setIsFormOpen(true);
+                  setFormError("");
+                  setActionError("");
+                  setSuccessMessage("");
+                }}
+                disabled={isSubmitting || deletingId !== null}
+                className="rounded-lg border border-(--primary) px-4 py-2 font-semibold text-(--primary) transition-colors hover:bg-(--primary) hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Modifier
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteCorrespondant(correspondant)}
+                disabled={isSubmitting || deletingId !== null}
+                className="rounded-lg border border-red-700 px-4 py-2 font-semibold text-red-700 transition-colors hover:bg-red-700 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deletingId === correspondant.id
+                  ? "Suppression…"
+                  : "Supprimer"}
+              </button>
             </div>
           </li>
         ))}

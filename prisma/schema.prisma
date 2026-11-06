@@ -29,6 +29,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   correspondants Correspondant[]
+  pathologies   Pathology[]
 
   @@map("user")
 }
@@ -106,4 +107,21 @@ model Correspondant {
   @@unique([userId, email])
   @@index([userId])
   @@map("correspondants")
+}
+
+model Pathology {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  followUp    String?
+  speciality  String?
+  patients    String[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("pathologies")
 }

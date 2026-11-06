@@ -62,12 +62,20 @@ export default async function HeaderComponent() {
               </>
             )}
             <li>
-              <a
-                href="correspondants"
+              <Link
+                href="/correspondants"
                 className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
               >
                 Correspondants
-              </a>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/pathologies"
+                className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
+              >
+                Pathologies
+              </Link>
             </li>
           </ul>
         </nav>

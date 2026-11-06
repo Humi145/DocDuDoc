@@ -17,8 +17,11 @@ async function CorrespondantsContent() {
       id: true,
       name: true,
       email: true,
+      phone: true,
+      address: true,
       speciality: true,
       patientslist: true,
+      notes: true,
     },
   });
 
