@@ -75,6 +75,7 @@ export default function SigninPage() {
               type="email"
               autoComplete="email"
               required
+              placeholder="docteur.docteur@mail.com"
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-4 py-3 text-(--foreground) outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
@@ -92,6 +93,7 @@ export default function SigninPage() {
               type="password"
               autoComplete="current-password"
               required
+              placeholder="••••••••"
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-4 py-3 text-(--foreground) outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
           </div>
