@@ -1,7 +1,10 @@
 import re, requests
-import argostranslate.package, argostranslate.translate
+import argostranslate.package
+from importlib import import_module
 
-# 1. Parser le .obo : id -> nom anglais
+argostranslate_translate = import_module("argostranslate.translate")
+
+# 1. Parser le .obo via l'id.
 diseases = {}
 cur_id = None
 with open("doid.obo", encoding="utf-8") as f:
@@ -34,5 +37,5 @@ argostranslate.package.install_from_path(pkg.download())
 # 4. Écriture du .txt
 with open("maladies_fr.txt", "w", encoding="utf-8") as out:
     for doid, name_en in diseases.items():
-        name = fr.get(doid) or argostranslate.translate.translate(name_en, "en", "fr")
+        name = fr.get(doid) or argostranslate_translate.translate(name_en, "en", "fr")
         out.write(name + "\n")

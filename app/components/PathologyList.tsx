@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import PathologiesAutocomplete from "@/app/components/PathologiesAutocomplete";
 
 type Pathology = {
   id: string;
@@ -283,7 +284,14 @@ export default function PathologyList({ initialState }: { initialState: ViewStat
             <label htmlFor="pathology-name" className="mb-1 block text-sm font-medium">
               Pathologie <span aria-hidden="true">*</span>
             </label>
-            <input id="pathology-name" name="name" required maxLength={120} defaultValue={editingPathology?.name ?? ""} className={inputClass} />
+            <PathologiesAutocomplete
+              id="pathology-name"
+              name="name"
+              required
+              maxLength={120}
+              defaultValue={editingPathology?.name ?? ""}
+              className={inputClass}
+            />
           </div>
           <div>
             <label htmlFor="pathology-speciality" className="mb-1 block text-sm font-medium">
