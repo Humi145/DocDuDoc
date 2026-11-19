@@ -7,7 +7,7 @@ import { useState, type FormEvent } from "react";
 type CorrespondantListItem = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   address: string | null;
   speciality: string | null;
@@ -28,7 +28,7 @@ function normalizeCorrespondant(
     !isRecord(value) ||
     typeof value.id !== "string" ||
     typeof value.name !== "string" ||
-    typeof value.email !== "string"
+    (typeof value.email !== "string" && value.email !== null)
   ) {
     return null;
   }
@@ -119,7 +119,7 @@ export default function CorrespondantList({
           credentials: "same-origin",
           body: JSON.stringify({
             name: formData.get("name"),
-            email: formData.get("email"),
+            email: String(formData.get("email") ?? "").trim() || null,
             phone: formData.get("phone") || null,
             address: formData.get("address") || null,
             speciality: formData.get("speciality") || null,
@@ -390,7 +390,7 @@ export default function CorrespondantList({
               htmlFor="correspondant-email"
               className="mb-1 block text-sm font-medium"
             >
-              Adresse e-mail <span aria-hidden="true">*</span>
+              Adresse e-mail
             </label>
             <input
               id="correspondant-email"
@@ -398,7 +398,6 @@ export default function CorrespondantList({
               type="email"
               autoComplete="email"
               maxLength={254}
-              required
               defaultValue={editingCorrespondant?.email ?? ""}
               className="w-full rounded-lg border border-(--foreground)/20 bg-white px-3 py-2 outline-none focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/20"
             />
@@ -535,12 +534,18 @@ export default function CorrespondantList({
               )}
             </div>
             <div className="flex flex-wrap items-center gap-4">
-              <a
-                href={`mailto:${correspondant.email}`}
-                className="text-(--primary) hover:text-(--foreground)"
-              >
-                {correspondant.email}
-              </a>
+              {correspondant.email ? (
+                <a
+                  href={`mailto:${correspondant.email}`}
+                  className="text-(--primary) hover:text-(--foreground)"
+                >
+                  {correspondant.email}
+                </a>
+              ) : (
+                <span className="text-sm text-(--foreground)/70">
+                  E-mail non renseigné
+                </span>
+              )}
               <Link
                 href={`/correspondants/${encodeURIComponent(correspondant.id)}`}
                 className="rounded-lg border border-(--primary) px-4 py-2 font-semibold text-(--primary) transition-colors hover:bg-(--primary) hover:text-white"

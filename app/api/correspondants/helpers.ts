@@ -3,7 +3,7 @@ import { auth } from "@/app/libs/auth";
 
 export type CorrespondantInput = {
   name?: string;
-  email?: string;
+  email?: string | null;
   phone?: string | null;
   address?: string | null;
   speciality?: string | null;
@@ -13,7 +13,6 @@ export type CorrespondantInput = {
 
 export type NewCorrespondantInput = CorrespondantInput & {
   name: string;
-  email: string;
   patientslist: string[];
 };
 
@@ -79,16 +78,19 @@ export async function parseCorrespondantInput(
   }
 
   if (!partial || "email" in input) {
-    if (
-      typeof input.email !== "string" ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())
-    ) {
+    if (input.email === null || input.email === undefined) {
+      data.email = null;
+    } else if (typeof input.email !== "string") {
+      return { error: "L’adresse e-mail doit être une chaîne ou null." };
+    } else if (!input.email.trim()) {
+      data.email = null;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())) {
       return { error: "Une adresse e-mail valide est obligatoire." };
-    }
-    if (input.email.trim().length > 254) {
+    } else if (input.email.trim().length > 254) {
       return { error: "L’adresse e-mail ne peut pas dépasser 254 caractères." };
+    } else {
+      data.email = input.email.trim().toLowerCase();
     }
-    data.email = input.email.trim().toLowerCase();
   }
 
   for (const field of ["phone", "address", "speciality", "notes"] as const) {

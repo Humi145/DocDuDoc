@@ -95,7 +95,8 @@ model Correspondant {
   updatedAt DateTime @updatedAt
 
   name      String
-  email     String
+  email     String?
+  sourceId  String?
   phone     String?
   address   String?
   speciality String?
@@ -106,6 +107,7 @@ model Correspondant {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, email])
+  @@unique([userId, sourceId])
   @@index([userId])
   @@map("correspondants")
 }

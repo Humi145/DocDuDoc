@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 type Correspondant = {
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   address: string | null;
   speciality: string | null;
@@ -34,7 +34,7 @@ function normalizeCorrespondant(value: unknown): Correspondant | null {
   if (
     !isRecord(value) ||
     typeof value.name !== "string" ||
-    typeof value.email !== "string" ||
+    (typeof value.email !== "string" && value.email !== null) ||
     typeof value.createdAt !== "string" ||
     typeof value.updatedAt !== "string"
   ) {
@@ -210,12 +210,16 @@ export default function CorrespondantDetails({ id }: { id: string }) {
 
             <dl className="mt-6 grid gap-5 rounded-xl border border-(--foreground)/15 bg-white/80 p-6 text-(--text) shadow-sm sm:grid-cols-2">
               <Information label="Adresse e-mail">
-                <a
-                  href={`mailto:${state.correspondant.email}`}
-                  className="text-(--primary) hover:underline"
-                >
-                  {state.correspondant.email}
-                </a>
+                {state.correspondant.email ? (
+                  <a
+                    href={`mailto:${state.correspondant.email}`}
+                    className="text-(--primary) hover:underline"
+                  >
+                    {state.correspondant.email}
+                  </a>
+                ) : (
+                  "Non renseignée"
+                )}
               </Information>
               <Information label="Téléphone">
                 {state.correspondant.phone ? (
