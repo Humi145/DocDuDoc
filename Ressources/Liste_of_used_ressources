@@ -28,3 +28,9 @@ https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html : Une solutio
 https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html : une liste des app un peu utile pour les précautions à prendre quant aux échanges de fichiers.
 https://mozilla.github.io/pdf.js/ : solution d'affichage de pdf sur le web.
 
+Setup des documents :
+https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/s3/ // documentation pour comment le stockage S3 est censé fonctionner
+https://docs.docker.com/compose/ // C'est dans le nom mdr, c'est la documentation du docker compose
+https://docs.min.io/aistor/installation/container/ // utilisation de Minio avec docker compose
+https://docs.min.io/aistor/reference/cli/ // pour le déploiement d'un serveur avec Minio
+https://docs.docker.com/reference/dockerfile/#healthcheck // healthcheck pour le postgresql via docker

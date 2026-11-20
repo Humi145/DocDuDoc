@@ -1,9 +1,6 @@
 import prisma from "@/app/libs/prisma";
 import { getAuthenticatedUser } from "@/app/api/correspondants/helpers";
-import {
-  deletePdf,
-  DocumentStorageConfigurationError,
-} from "@/app/documents/storage";
+import { deletePdf } from "@/app/documents/storage";
 
 type DocumentRouteProps = {
   params: Promise<{ id: string }>;
@@ -32,9 +29,6 @@ export async function DELETE(
   try {
     await deletePdf(document.storageKey);
   } catch (error) {
-    if (error instanceof DocumentStorageConfigurationError) {
-      return Response.json({ error: error.message }, { status: 503 });
-    }
     console.error("Impossible de supprimer le PDF du stockage.", error);
     return Response.json(
       { error: "Le stockage des documents est momentanément indisponible." },

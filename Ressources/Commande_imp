@@ -1,6 +1,6 @@
 setup de Postgresql: 
 docker run --name DDD -e POSTGRES_PASSWORD=1234 -p 5431:5432 -d postgres
-/!\ Attention, cette commande n'est pas la commande à run lors du déploiement. trouvé un meilleur mot de passe.
+/!\ Attention, cette commande n'est pas la commande à run lors du déploiement. trouvé un meilleur mot de passe. et maintenant docker compose up fait la même chose
 
 Setup de Prisma :
 npm install -D prisma // ça installe Prisma en tant que dépendance de développement
@@ -16,3 +16,8 @@ Better auth :
 npm install @better-auth/prisma-adapter // installe l'adaptateur.
 npx @better-auth/cli generate --config app/libs/auth.ts --output=auth.prisma.schema // génère la nouvelle table dans un nouveau fichier auth.prisma.schema pour better auth.
                                                                                        /!\ il faut enlever le fichier générer une fois que tout a été copié dans schema.prisma
+
+setup pour les documents :
+sudo docker compose up -d db // démarre PostgreSQL si aucun conteneur ne l'exécute déjà
+npx prisma migrate deploy // applique les migrations
+npm run dev // démarre l'application ; les PDF sont enregistrés dans .local-storage/documents. à modifier lors du déploiement.

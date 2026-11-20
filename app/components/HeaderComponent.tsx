@@ -85,6 +85,14 @@ export default async function HeaderComponent() {
                 Pathologies
               </Link>
             </li>
+            <li>
+              <Link
+                href="#"
+                className="inline-flex text-(--text) items-center rounded-md border-2 border-(--primary) bg-(--background) px-6 py-3 text-base shadow-sm transition-colors hover:bg-(--primary) hover:text-white"
+              >
+                Modèles de documents
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

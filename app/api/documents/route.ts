@@ -3,7 +3,6 @@ import prisma from "@/app/libs/prisma";
 import { getAuthenticatedUser } from "@/app/api/correspondants/helpers";
 import {
   deletePdf,
-  DocumentStorageConfigurationError,
   storePdf,
 } from "@/app/documents/storage";
 
@@ -104,9 +103,6 @@ export async function POST(request: Request) {
   try {
     await storePdf(storageKey, body);
   } catch (error) {
-    if (error instanceof DocumentStorageConfigurationError) {
-      return Response.json({ error: error.message }, { status: 503 });
-    }
     console.error("Impossible d’enregistrer le PDF dans le stockage.", error);
     return Response.json(
       { error: "Le stockage des documents est momentanément indisponible." },

@@ -46,6 +46,65 @@ migration existent déjà dans la base. Pour une base vide, utilisez plutôt
 `npx prisma migrate deploy` : les deux migrations seront appliquées dans l’ordre.
 Les administrateurs configurés ne peuvent pas être suspendus depuis cette page.
 
+## Importer des correspondants
+
+Le script `scripts/corresp/import_correspondants.py` importe le fichier JSON
+dans le compte indiqué par son adresse e-mail. Il utilise `DATABASE_URL` (chargée
+depuis `.env` si disponible) et affiche un aperçu sans écrire par défaut.
+Appliquez d’abord la migration et régénérez le client Prisma, puis installez ses
+dépendances et vérifiez l’aperçu :
+
+```bash
+npx prisma migrate deploy
+npx prisma generate
+python -m pip install -r scripts/corresp/requirements.txt
+python scripts/corresp/import_correspondants.py --user-email utilisateur@example.com
+```
+
+Pour confirmer et effectuer l’import :
+
+```bash
+python scripts/corresp/import_correspondants.py \
+  --user-email utilisateur@example.com \
+  --apply
+```
+
+Les fiches sont rattachées au compte ciblé et identifiées par leur `pro_id`,
+ce qui rend une nouvelle exécution sans doublons. Les e-mails absents ou
+invalides sont enregistrés comme `NULL`. Si plusieurs fiches partagent une
+adresse ou qu’elle est déjà utilisée par ce compte, la première la conserve et
+les autres fiches gardent l’adresse source dans leurs notes. Les numéros de
+téléphone sont regroupés ; les informations source non représentées par des
+colonnes dédiées (comme les horaires, le fax et le site) sont conservées dans
+les notes.
+
+## Documents PDF
+
+La page `/documents` permet à chaque utilisateur connecté d’ajouter, consulter et
+supprimer ses PDF. PostgreSQL conserve leur nom, leur taille et leur clé de
+stockage ; le contenu des fichiers est enregistré dans `.local-storage/documents`
+à la racine du projet. Cette option ne nécessite aucun service MinIO ou S3.
+La taille maximale est de 20 Mo. L’aperçu est servi par une route qui vérifie la
+session et le propriétaire à chaque accès.
+
+Pour le développement local, démarrez PostgreSQL si nécessaire, appliquez les
+migrations, puis lancez l’application :
+
+```bash
+sudo docker compose up -d db
+npx prisma migrate deploy
+npm run dev
+```
+
+Si PostgreSQL est déjà démarré sur `localhost:5431` (par exemple dans un
+conteneur `DDD` existant), ne relancez pas le service Compose `db` : exécutez
+directement les deux dernières commandes. Les documents restent sur le disque
+local même après un redémarrage de l’application. Pour changer le répertoire,
+sauvegardez `.local-storage/documents` avec la base de données. En production,
+un disque local exige une persistance et des sauvegardes adaptées ; pour des
+documents de santé, vérifiez également les exigences réglementaires applicables,
+notamment HDS le cas échéant.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

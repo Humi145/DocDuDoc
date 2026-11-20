@@ -1,92 +1,54 @@
 import "server-only";
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
-export class DocumentStorageConfigurationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "DocumentStorageConfigurationError";
+export class DocumentFileNotFoundError extends Error {
+  constructor() {
+    super("Le fichier PDF est introuvable.");
+    this.name = "DocumentFileNotFoundError";
   }
 }
 
-let client: S3Client | undefined;
+function getPdfPath(key: string) {
+  const storageDirectory = join(process.cwd(), ".local-storage", "documents");
+  const filePath = resolve(storageDirectory, key);
+  const relativePath = relative(storageDirectory, filePath);
 
-function getStorageConfig() {
-  const endpoint = process.env.DOCUMENTS_S3_ENDPOINT;
-  const region = process.env.DOCUMENTS_S3_REGION;
-  const bucket = process.env.DOCUMENTS_S3_BUCKET;
-  const accessKeyId = process.env.DOCUMENTS_S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.DOCUMENTS_S3_SECRET_ACCESS_KEY;
-
-  if (!endpoint || !region || !bucket || !accessKeyId || !secretAccessKey) {
-    throw new DocumentStorageConfigurationError(
-      "Le stockage des documents n’est pas configuré.",
-    );
+  if (
+    !key ||
+    relativePath === "" ||
+    relativePath === ".." ||
+    relativePath.startsWith(`..${sep}`) ||
+    isAbsolute(relativePath)
+  ) {
+    throw new Error("La clé de stockage du document est invalide.");
   }
 
-  let endpointUrl: URL;
-  try {
-    endpointUrl = new URL(endpoint);
-  } catch {
-    throw new DocumentStorageConfigurationError(
-      "L’URL du stockage des documents est invalide.",
-    );
-  }
-
-  const isLocalEndpoint = ["localhost", "127.0.0.1", "::1"].includes(
-    endpointUrl.hostname,
-  );
-  if (endpointUrl.protocol !== "https:" && !isLocalEndpoint) {
-    throw new DocumentStorageConfigurationError(
-      "Le stockage des documents doit utiliser HTTPS.",
-    );
-  }
-
-  if (!client) {
-    client = new S3Client({
-      endpoint: endpointUrl.toString(),
-      region,
-      forcePathStyle: true,
-      credentials: { accessKeyId, secretAccessKey },
-    });
-  }
-
-  return { client, bucket };
+  return filePath;
 }
 
 export async function storePdf(key: string, body: Buffer) {
-  const { client: storageClient, bucket } = getStorageConfig();
-  await storageClient.send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: body,
-      ContentLength: body.byteLength,
-      ContentType: "application/pdf",
-    }),
-  );
+  const filePath = getPdfPath(key);
+  await mkdir(dirname(filePath), { recursive: true, mode: 0o700 });
+  await writeFile(filePath, body, { flag: "wx", mode: 0o600 });
 }
 
 export async function getPdf(key: string) {
-  const { client: storageClient, bucket } = getStorageConfig();
-  return storageClient.send(
-    new GetObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    }),
-  );
+  try {
+    return await readFile(getPdfPath(key));
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "ENOENT"
+    ) {
+      throw new DocumentFileNotFoundError();
+    }
+    throw error;
+  }
 }
 
 export async function deletePdf(key: string) {
-  const { client: storageClient, bucket } = getStorageConfig();
-  await storageClient.send(
-    new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: key,
-    }),
-  );
+  await rm(getPdfPath(key), { force: true });
 }

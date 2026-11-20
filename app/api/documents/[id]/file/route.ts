@@ -1,10 +1,6 @@
-import { S3ServiceException } from "@aws-sdk/client-s3";
 import prisma from "@/app/libs/prisma";
 import { getAuthenticatedUser } from "@/app/api/correspondants/helpers";
-import {
-  DocumentStorageConfigurationError,
-  getPdf,
-} from "@/app/documents/storage";
+import { DocumentFileNotFoundError, getPdf } from "@/app/documents/storage";
 
 type DocumentFileRouteProps = {
   params: Promise<{ id: string }>;
@@ -34,10 +30,7 @@ export async function GET(
   try {
     pdf = await getPdf(document.storageKey);
   } catch (error) {
-    if (error instanceof DocumentStorageConfigurationError) {
-      return Response.json({ error: error.message }, { status: 503 });
-    }
-    if (error instanceof S3ServiceException && error.name === "NoSuchKey") {
+    if (error instanceof DocumentFileNotFoundError) {
       return Response.json({ error: "Le fichier PDF est introuvable." }, { status: 404 });
     }
     console.error("Impossible de lire le PDF dans le stockage.", error);
@@ -47,14 +40,7 @@ export async function GET(
     );
   }
 
-  if (!pdf.Body) {
-    return Response.json(
-      { error: "Le stockage n’a renvoyé aucun contenu pour ce PDF." },
-      { status: 502 },
-    );
-  }
-
-  return new Response(pdf.Body.transformToWebStream(), {
+  return new Response(new Uint8Array(pdf), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": 'inline; filename="document.pdf"',

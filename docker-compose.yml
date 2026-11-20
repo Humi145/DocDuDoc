@@ -1,0 +1,15 @@
+env_file: .env
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    ports:
+      - "5431:5432"
+    volumes:
+      - ddd_postgres:/var/lib/postgresql/data
+
+volumes:
+  ddd_postgres:
